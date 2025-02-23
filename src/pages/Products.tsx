@@ -122,14 +122,47 @@ const Products = () => {
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-2 right-2 flex gap-2">
-          <DialogTrigger asChild>
-            <button
-              onClick={() => setQuickViewProduct(product)}
-              className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"
-            >
-              <Eye className="w-4 h-4 text-gray-600" />
-            </button>
-          </DialogTrigger>
+          <Dialog>
+            <DialogTrigger asChild>
+              <button
+                onClick={() => setQuickViewProduct(product)}
+                className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"
+              >
+                <Eye className="w-4 h-4 text-gray-600" />
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <img
+                    src={product.image_url || '/placeholder.svg'}
+                    alt={product.name}
+                    className="w-full h-[300px] object-cover rounded-lg"
+                  />
+                </div>
+                <div>
+                  <h2 className="font-heading text-2xl font-bold text-text mb-2">
+                    {product.name}
+                  </h2>
+                  <p className="text-text-light mb-4">
+                    {product.description}
+                  </p>
+                  <p className="text-2xl font-bold text-primary-dark mb-4">
+                    ${product.price.toFixed(2)}
+                    <span className="text-text-light text-sm ml-1">
+                      per {product.unit}
+                    </span>
+                  </p>
+                  <button
+                    className="w-full px-6 py-3 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors"
+                    onClick={() => toast.success("Added to cart")}
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <button
             className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"
             onClick={() => toast.success("Added to cart")}
@@ -183,14 +216,47 @@ const Products = () => {
         </p>
       </div>
       <div className="flex flex-col gap-2">
-        <DialogTrigger asChild>
-          <button
-            onClick={() => setQuickViewProduct(product)}
-            className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"
-          >
-            <Eye className="w-4 h-4 text-gray-600" />
-          </button>
-        </DialogTrigger>
+        <Dialog>
+          <DialogTrigger asChild>
+            <button
+              onClick={() => setQuickViewProduct(product)}
+              className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"
+            >
+              <Eye className="w-4 h-4 text-gray-600" />
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <img
+                  src={product.image_url || '/placeholder.svg'}
+                  alt={product.name}
+                  className="w-full h-[300px] object-cover rounded-lg"
+                />
+              </div>
+              <div>
+                <h2 className="font-heading text-2xl font-bold text-text mb-2">
+                  {product.name}
+                </h2>
+                <p className="text-text-light mb-4">
+                  {product.description}
+                </p>
+                <p className="text-2xl font-bold text-primary-dark mb-4">
+                  ${product.price.toFixed(2)}
+                  <span className="text-text-light text-sm ml-1">
+                    per {product.unit}
+                  </span>
+                </p>
+                <button
+                  className="w-full px-6 py-3 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors"
+                  onClick={() => toast.success("Added to cart")}
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         <button
           className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"
           onClick={() => toast.success("Added to cart")}
@@ -326,42 +392,6 @@ const Products = () => {
           </>
         )}
       </div>
-
-      <Dialog>
-        <DialogContent className="max-w-2xl">
-          {quickViewProduct && (
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <img
-                  src={quickViewProduct.image_url || '/placeholder.svg'}
-                  alt={quickViewProduct.name}
-                  className="w-full h-[300px] object-cover rounded-lg"
-                />
-              </div>
-              <div>
-                <h2 className="font-heading text-2xl font-bold text-text mb-2">
-                  {quickViewProduct.name}
-                </h2>
-                <p className="text-text-light mb-4">
-                  {quickViewProduct.description}
-                </p>
-                <p className="text-2xl font-bold text-primary-dark mb-4">
-                  ${quickViewProduct.price.toFixed(2)}
-                  <span className="text-text-light text-sm ml-1">
-                    per {quickViewProduct.unit}
-                  </span>
-                </p>
-                <button
-                  className="w-full px-6 py-3 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors"
-                  onClick={() => toast.success("Added to cart")}
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
