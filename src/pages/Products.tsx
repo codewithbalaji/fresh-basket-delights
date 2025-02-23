@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -40,10 +39,10 @@ const Products = () => {
   const [isGridView, setIsGridView] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 1000]); // Increased range
   const [sortBy, setSortBy] = useState<string>("name-asc");
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -58,6 +57,13 @@ const Products = () => {
 
         setProducts(data || []);
         setFilteredProducts(data || []);
+        
+        // Set initial price range based on actual product prices
+        if (data && data.length > 0) {
+          const prices = data.map(p => p.price);
+          const maxPrice = Math.ceil(Math.max(...prices));
+          setPriceRange([0, maxPrice]);
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
         toast.error("Failed to load products");
@@ -69,49 +75,58 @@ const Products = () => {
     fetchProducts();
   }, []);
 
-  const filterProducts = debounce(() => {
-    let filtered = [...products];
-
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Apply category filter
-    if (selectedCategory) {
-      filtered = filtered.filter(product =>
-        product.category_id === selectedCategory
-      );
-    }
-
-    // Apply price range filter
-    filtered = filtered.filter(product =>
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Apply sorting
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'price-asc':
-          return a.price - b.price;
-        case 'price-desc':
-          return b.price - a.price;
-        case 'name-desc':
-          return b.name.localeCompare(a.name);
-        default: // name-asc
-          return a.name.localeCompare(b.name);
-      }
-    });
-
-    setFilteredProducts(filtered);
-  }, 300);
-
+  // Filter products whenever filters change
   useEffect(() => {
-    filterProducts();
-  }, [searchQuery, selectedCategory, priceRange, sortBy]);
+    const applyFilters = () => {
+      let filtered = [...products];
+
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(product =>
+          product.name.toLowerCase().includes(query) ||
+          product.description?.toLowerCase().includes(query)
+        );
+      }
+
+      // Apply category filter
+      if (selectedCategory) {
+        filtered = filtered.filter(product =>
+          product.category_id === selectedCategory
+        );
+      }
+
+      // Apply price range filter
+      filtered = filtered.filter(product =>
+        product.price >= priceRange[0] && product.price <= priceRange[1]
+      );
+
+      // Apply sorting
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'price-asc':
+            return a.price - b.price;
+          case 'price-desc':
+            return b.price - a.price;
+          case 'name-desc':
+            return b.name.localeCompare(a.name);
+          default: // name-asc
+            return a.name.localeCompare(b.name);
+        }
+      });
+
+      setFilteredProducts(filtered);
+    };
+
+    // Debounce the filter application
+    const debouncedFilter = debounce(applyFilters, 300);
+    debouncedFilter();
+
+    // Cleanup
+    return () => {
+      debouncedFilter.cancel();
+    };
+  }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
 
   const ProductCard = ({ product }: { product: Product }) => (
     <div className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
@@ -341,8 +356,8 @@ const Products = () => {
                         Price Range (${priceRange[0]} - ${priceRange[1]})
                       </label>
                       <Slider
-                        defaultValue={[0, 100]}
-                        max={100}
+                        defaultValue={priceRange}
+                        max={1000}
                         step={1}
                         value={priceRange}
                         onValueChange={setPriceRange}
@@ -373,7 +388,14 @@ const Products = () => {
         </div>
 
         {loading ? (
-          <div className="text-center">Loading products...</div>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-text-light">Loading products...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-text-light">No products found matching your criteria.</p>
+          </div>
         ) : (
           <>
             {isGridView ? (
