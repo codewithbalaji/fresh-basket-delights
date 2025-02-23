@@ -1,9 +1,15 @@
 
+import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
+import { supabase } from "@/integrations/supabase/client";
+import type { Product } from "@/types/database";
+import { toast } from "sonner";
 
 const Index = () => {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+
   const features = [
     {
       title: "Fresh & Organic",
@@ -19,26 +25,28 @@ const Index = () => {
     },
   ];
 
-  const featuredProducts = [
-    {
-      name: "Fresh Apples",
-      price: "$4.99",
-      unit: "per kg",
-      image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6",
-    },
-    {
-      name: "Organic Tomatoes",
-      price: "$3.99",
-      unit: "per kg",
-      image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337",
-    },
-    {
-      name: "Green Lettuce",
-      price: "$2.99",
-      unit: "per piece",
-      image: "https://images.unsplash.com/photo-1622205313162-be1d5712a43c",
-    },
-  ];
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_featured', true)
+          .limit(3);
+
+        if (error) {
+          throw error;
+        }
+
+        setFeaturedProducts(data || []);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error("Failed to load featured products");
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -97,13 +105,13 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {featuredProducts.map((product, index) => (
               <div
-                key={index}
+                key={product.id}
                 className="group rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow animate-slideUp"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="aspect-w-16 aspect-h-9 bg-gray-100">
                   <img
-                    src={product.image}
+                    src={product.image_url || '/placeholder.svg'}
                     alt={product.name}
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -113,9 +121,9 @@ const Index = () => {
                     {product.name}
                   </h3>
                   <p className="text-primary-dark font-semibold">
-                    {product.price}
+                    ${product.price.toFixed(2)}
                     <span className="text-text-light text-sm ml-1">
-                      {product.unit}
+                      per {product.unit}
                     </span>
                   </p>
                 </div>
